@@ -1870,7 +1870,7 @@
             const safeCode = familyCode.toLowerCase().replace(/[^a-z0-9]/g, '');
             if (!safeCode) return;
 
-            const registryUrl = 'https://extendsclass.com/api/json-storage/bin/badeadb';
+            const registryUrl = 'https://json.extendsclass.com/bin/badeadb';
 
             try {
                 // 1. Descargar el registro global para buscar el bin de la familia
@@ -1885,13 +1885,13 @@
 
                 if (binId) {
                     // Descargar recetas del bin existente
-                    const binResponse = await fetch(`https://extendsclass.com/api/json-storage/bin/${binId}`);
+                    const binResponse = await fetch(`https://json.extendsclass.com/bin/${binId}`);
                     if (binResponse.ok) {
                         cloudData = await binResponse.json();
                     }
                 } else {
                     // Crear un nuevo bin en extendsclass.com para esta familia
-                    const newBinResponse = await fetch('https://extendsclass.com/api/json-storage/bin', {
+                    const newBinResponse = await fetch('https://json.extendsclass.com/bin', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(recipes)
@@ -1923,7 +1923,7 @@
                     localStorage.setItem('planner_p_recetas_v11', JSON.stringify(recipes));
 
                     // Subir recetas actualizadas al bin de la familia
-                    await fetch(`https://extendsclass.com/api/json-storage/bin/${binId}`, {
+                    await fetch(`https://json.extendsclass.com/bin/${binId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(recipes)
