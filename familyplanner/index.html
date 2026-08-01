@@ -1586,20 +1586,16 @@
                                 const img = r.images && r.images.length ? `<img src="${r.images[0]}">` : '<div style="width:44px; height:44px; background:rgba(0,0,0,0.2); border-radius:8px; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-utensils"></i></div>';
                                 el.innerHTML = `
                                     ${img}
-                                    <div class="title">${r.name}<br><span style="font-size:0.75rem; font-weight:bold; color: var(--primary);">Para ${item.pax} comensales</span></div>
-                                    <button class="remove" title="Quitar del planning" onclick="event.stopPropagation(); rmAssign('${dKey}','${m}',${arrIdx})"><i class="fa-solid fa-xmark"></i></button>
+                                    <div class="title" style="flex: 1;">
+                                        <span style="font-weight: 600; display:block;">${r.name}</span>
+                                        <span style="font-size:0.72rem; font-weight:bold; color: var(--primary); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;" onclick="event.stopPropagation(); window.editComensales('${dKey}', '${m}', ${arrIdx}, ${item.pax}, '${r.name.replace(/'/g, "\\'")}')">
+                                            <i class="fa-solid fa-pen" style="font-size: 0.6rem;"></i> Para ${item.pax} comensales
+                                        </span>
+                                    </div>
+                                    <button class="remove" title="Quitar del planning" onclick="event.stopPropagation(); window.rmAssign('${dKey}','${m}',${arrIdx})"><i class="fa-solid fa-xmark"></i></button>
                                 `;
-                                // Editar comensales al hacer clic
-                                el.onclick = (e) => {
-                                    e.stopPropagation();
-                                    const newPax = prompt(`¿Cuántos comensales comerán ${r.name} este día?`, item.pax);
-                                    const val = parseInt(newPax);
-                                    if (val && val > 0) {
-                                        assignments[dKey][m][arrIdx].pax = val;
-                                        triggerSavePrivate();
-                                        renderCalendar();
-                                    }
-                                };
+                                // Al hacer clic en la tarjeta, abrir la receta
+                                el.onclick = () => window.openRecipe(r.id);
                                 slot.appendChild(el);
                             }
                         });
@@ -1610,6 +1606,16 @@
             }
             renderShoppingList();
         }
+
+        window.editComensales = (dKey, m, arrIdx, oldPax, recipeName) => {
+            const newPax = prompt(`¿Cuántos comensales comerán ${recipeName} este día?`, oldPax);
+            const val = parseInt(newPax);
+            if (val && val > 0) {
+                assignments[dKey][m][arrIdx].pax = val;
+                triggerSavePrivate();
+                renderCalendar();
+            }
+        };
 
         window.rmAssign = (d, m, idx) => { assignments[d][m].splice(idx, 1); triggerSavePrivate(); renderCalendar(); };
         window.clearWeek = () => {
@@ -1861,7 +1867,8 @@
             statusLabel.textContent = 'Syncing...';
             statusLabel.style.color = '#fbbf24';
 
-            const endpoint = `https://kvdb.io/2U9g2aL4Kk7nJ8fL8pL5tM/${familyCode}_recipes`;
+            const safeCode = familyCode.replace(/[^a-z0-9]/g, '');
+            const endpoint = `https://kvdb.io/fp_${safeCode}/recipes`;
 
             try {
                 // 1. Intentar descargar recetas más recientes del servidor
@@ -1897,6 +1904,7 @@
                 console.error("Sincronización en la nube falló", err);
                 statusLabel.textContent = 'Error Sync';
                 statusLabel.style.color = '#ef4444';
+                renderRecipeList(); // Renderizar de todos modos de forma local
             }
         }
 
